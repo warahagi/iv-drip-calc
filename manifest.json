@@ -1,0 +1,17 @@
+{
+  "name": "点滴ドロップ計算器 PRO",
+  "short_name": "点滴計算",
+  "description": "看護師さんのための、安心・確実な滴下管理ツール",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
