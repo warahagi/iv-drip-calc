@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>点滴ドロップ計算器 PRO | 究極の現場仕様</title>
-    
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#0ea5e9">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2966/2966486.png">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -25,26 +28,93 @@
             }
         }
     </script>
-    <style>
-        body { font-family: 'Inter', 'Noto Sans JP', sans-serif; transition: background-color 0.3s ease; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .rhythm-active { box-shadow: 0 0 30px 6px rgba(14, 165, 233, 0.7); background-color: #0ea5e9 !important; transform: scale(1.1); }
-        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #f59e0b; }
-        input:checked + .slider:before { transform: translateX(20px); }
-        
-        #flashOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: black; display: none; z-index: 100;
-            justify-content: center; align-items: center; cursor: pointer;
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            transition: background-color 0.3s ease;
         }
-        .flash-active { background-color: #0ea5e9 !important; }
-        .preset-btn { @apply px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-sky-100 hover:text-sky-600 dark:hover:bg-sky-900/50 transition-all; }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .rhythm-active {
+            box-shadow: 0 0 30px 6px rgba(14, 165, 233, 0.7);
+            background-color: #0ea5e9 !important;
+            transform: scale(1.1);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #f59e0b;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        #flashOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            display: none;
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .flash-active {
+            background-color: #0ea5e9 !important;
+        }
+
+        .preset-btn {
+            @apply px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-sky-100 hover:text-sky-600 dark:hover:bg-sky-900/50 transition-all;
+        }
     </style>
 </head>
+
 <body class="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col items-center p-4 sm:p-6 pb-12">
     <div id="flashOverlay" onclick="closeFlash()">
         <div class="text-white text-center">
@@ -54,85 +124,127 @@
     </div>
 
     <div class="w-full max-w-md flex justify-between items-center mb-6">
-        <div id="notifStatus" class="text-[10px] font-black px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-400 uppercase tracking-tighter">
+        <div id="notifStatus"
+            class="text-[10px] font-black px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-400 uppercase tracking-tighter">
             通知: オフ
         </div>
-        <button onclick="toggleDarkMode()" class="p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-            <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+        <button onclick="toggleDarkMode()"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+            <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
         </button>
     </div>
 
     <div class="w-full max-w-md space-y-4">
         <header class="text-center space-y-1 mb-2">
-            <h1 class="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">点滴ドロップ計算器 <span class="text-sky-500">PRO</span></h1>
-            <p class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">安心・確実な究極の現場仕様</p>
+            <h1 class="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">点滴ドロップ計算器 <span
+                    class="text-sky-500">PRO</span></h1>
+            <p class="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">安心・確実な究極の現場仕様
+            </p>
         </header>
 
         <div class="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl">
-            <button onclick="setMode('standard')" id="tab-standard" class="flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white dark:bg-sky-600 shadow-sm text-sky-600 dark:text-white">予定時間から</button>
-            <button onclick="setMode('residual')" id="tab-residual" class="flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 dark:text-slate-400">残量から逆算</button>
+            <button onclick="setMode('standard')" id="tab-standard"
+                class="flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white dark:bg-sky-600 shadow-sm text-sky-600 dark:text-white">予定時間から</button>
+            <button onclick="setMode('residual')" id="tab-residual"
+                class="flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 dark:text-slate-400">残量から逆算</button>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800/50 space-y-5">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800/50 space-y-5">
             <div id="inputs-standard" class="space-y-4">
                 <div class="space-y-2">
                     <div class="flex justify-between items-center px-1">
-                        <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">輸液総量 (ml)</label>
+                        <label
+                            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">輸液総量
+                            (ml)</label>
                         <div class="flex gap-1.5">
                             <button class="preset-btn" onclick="setPreset('vol-std', 500)">500</button>
                             <button class="preset-btn" onclick="setPreset('vol-std', 250)">250</button>
                             <button class="preset-btn" onclick="setPreset('vol-std', 100)">100</button>
                         </div>
                     </div>
-                    <input type="number" id="vol-std" inputmode="decimal" placeholder="0" class="w-full text-2xl font-black p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all" oninput="calculate()">
+                    <input type="number" id="vol-std" inputmode="decimal" placeholder="0"
+                        class="w-full text-2xl font-black p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all"
+                        oninput="calculate()">
                 </div>
                 <div class="space-y-2">
                     <div class="flex justify-between items-center px-1">
-                        <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">予定時間 (h)</label>
+                        <label
+                            class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">予定時間
+                            (h)</label>
                         <div class="flex gap-1.5">
                             <button class="preset-btn" onclick="setPreset('time-std', 8)">8h</button>
                             <button class="preset-btn" onclick="setPreset('time-std', 6)">6h</button>
                             <button class="preset-btn" onclick="setPreset('time-std', 1)">1h</button>
                         </div>
                     </div>
-                    <input type="number" id="time-std" inputmode="decimal" placeholder="0" class="w-full text-2xl font-black p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all" oninput="calculate()">
+                    <input type="number" id="time-std" inputmode="decimal" placeholder="0"
+                        class="w-full text-2xl font-black p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all"
+                        oninput="calculate()">
                 </div>
             </div>
 
             <div id="inputs-residual" class="space-y-4 hidden">
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">残量 (ml)</label>
-                    <input type="number" id="vol-res" inputmode="decimal" placeholder="0" class="w-full text-2xl font-black p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all" oninput="calculate()">
+                    <label
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">残量
+                        (ml)</label>
+                    <input type="number" id="vol-res" inputmode="decimal" placeholder="0"
+                        class="w-full text-2xl font-black p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all"
+                        oninput="calculate()">
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">現在の滴下数 (滴/分)</label>
-                    <input type="number" id="rate-res" inputmode="decimal" placeholder="0" class="w-full text-2xl font-black p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all" oninput="calculate()">
+                    <label
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">現在の滴下数
+                        (滴/分)</label>
+                    <input type="number" id="rate-res" inputmode="decimal" placeholder="0"
+                        class="w-full text-2xl font-black p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all"
+                        oninput="calculate()">
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">セット</label>
-                    <select id="dripSet" onchange="calculate(); saveSettings();" class="w-full text-sm font-bold p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all appearance-none">
+                    <label
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">セット</label>
+                    <select id="dripSet" onchange="calculate(); saveSettings();"
+                        class="w-full text-sm font-bold p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all appearance-none">
                         <option value="20">成人 (20滴)</option>
                         <option value="60">小児 (60滴)</option>
                     </select>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">開始/現在時刻</label>
-                    <input type="time" id="startTime" class="w-full text-sm font-bold p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all" oninput="calculate()">
+                    <label
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">開始/現在時刻</label>
+                    <input type="time" id="startTime"
+                        class="w-full text-sm font-bold p-4 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all"
+                        oninput="calculate()">
                 </div>
             </div>
 
             <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                    <div
+                        class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
                     </div>
                     <div>
                         <p class="text-xs font-black text-amber-900 dark:text-amber-200">終了10分前アラート</p>
-                        <p class="text-[9px] font-bold text-amber-700/60 dark:text-amber-400/60 uppercase">終了10分前にお知らせ</p>
+                        <p class="text-[9px] font-bold text-amber-700/60 dark:text-amber-400/60 uppercase">終了10分前にお知らせ
+                        </p>
                     </div>
                 </div>
                 <label class="toggle-switch">
@@ -142,17 +254,23 @@
             </div>
         </div>
 
-        <div id="dashboard" class="bg-slate-900 dark:bg-slate-800/50 rounded-[2rem] p-7 shadow-2xl space-y-6 overflow-hidden relative border border-white/5">
+        <div id="dashboard"
+            class="bg-slate-900 dark:bg-slate-800/50 rounded-[2rem] p-7 shadow-2xl space-y-6 overflow-hidden relative border border-white/5">
             <div class="space-y-2 px-1">
                 <div class="flex justify-between items-end mb-1">
                     <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">進捗状況</span>
                     <span id="progressPercent" class="text-[10px] font-black text-sky-500">0%</span>
                 </div>
-                <div class="relative h-4 bg-slate-800 dark:bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                <div
+                    class="relative h-4 bg-slate-800 dark:bg-slate-950 rounded-full overflow-hidden border border-white/5">
                     <div class="absolute inset-0 flex justify-between px-[20%] pointer-events-none opacity-20">
-                        <div class="w-px h-full bg-white"></div><div class="w-px h-full bg-white"></div><div class="w-px h-full bg-white"></div>
+                        <div class="w-px h-full bg-white"></div>
+                        <div class="w-px h-full bg-white"></div>
+                        <div class="w-px h-full bg-white"></div>
                     </div>
-                    <div id="progressBar" class="absolute top-0 left-0 h-full w-0 bg-sky-500 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(14,165,233,0.5)]"></div>
+                    <div id="progressBar"
+                        class="absolute top-0 left-0 h-full w-0 bg-sky-500 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(14,165,233,0.5)]">
+                    </div>
                 </div>
                 <div class="flex justify-between text-[8px] font-black text-slate-600 uppercase tracking-tighter">
                     <span>開始</span><span>25%</span><span>50%</span><span>75%</span><span>終了</span>
@@ -160,7 +278,8 @@
             </div>
 
             <div class="text-center pt-2">
-                <span id="result-label" class="text-[10px] font-black text-sky-500 uppercase tracking-[0.3em] mb-2 block">1分間の滴下数</span>
+                <span id="result-label"
+                    class="text-[10px] font-black text-sky-500 uppercase tracking-[0.3em] mb-2 block">1分間の滴下数</span>
                 <div class="flex items-baseline justify-center gap-2">
                     <span id="main-result" class="text-8xl font-black text-white tracking-tighter">0</span>
                     <span id="main-unit" class="text-2xl font-bold text-slate-500 uppercase">滴</span>
@@ -168,12 +287,15 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4 relative z-10">
-                <button onclick="openFlash()" class="bg-slate-800/50 dark:bg-slate-900/50 rounded-3xl p-5 flex flex-col items-center justify-center space-y-3 border border-white/5 hover:bg-slate-800 transition-all active:scale-95">
+                <button onclick="openFlash()"
+                    class="bg-slate-800/50 dark:bg-slate-900/50 rounded-3xl p-5 flex flex-col items-center justify-center space-y-3 border border-white/5 hover:bg-slate-800 transition-all active:scale-95">
                     <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">滴下リズムガイド</span>
                     <div id="rhythmDot" class="w-8 h-8 rounded-full bg-slate-700"></div>
-                    <span class="text-sm font-black text-white"><span id="sec-res">0</span> <span class="text-xs text-slate-500">秒/滴</span></span>
+                    <span class="text-sm font-black text-white"><span id="sec-res">0</span> <span
+                            class="text-xs text-slate-500">秒/滴</span></span>
                 </button>
-                <div class="bg-slate-800/50 dark:bg-slate-900/50 rounded-3xl p-5 flex flex-col items-center justify-center space-y-3 border border-white/5">
+                <div
+                    class="bg-slate-800/50 dark:bg-slate-900/50 rounded-3xl p-5 flex flex-col items-center justify-center space-y-3 border border-white/5">
                     <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">終了予定時刻</span>
                     <span id="time-res" class="text-2xl font-black text-emerald-400 tracking-tighter">--:--</span>
                     <div class="flex items-center gap-1">
@@ -185,7 +307,8 @@
         </div>
 
         <footer class="text-center px-10">
-            <p class="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">※ 計算結果は目安です。必ず最終的な確認を行ってください。</p>
+            <p class="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">※
+                計算結果は目安です。必ず最終的な確認を行ってください。</p>
         </footer>
     </div>
 
@@ -193,8 +316,10 @@
         let currentMode = 'standard';
         let rhythmInterval = null;
         let alarmTimeout = null;
+        let timerInterval = null;
         let notificationsEnabled = false;
         let isFlashing = false;
+        let targetEndTime = null;
 
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
@@ -219,7 +344,14 @@
             const settings = {
                 dripSet: document.getElementById('dripSet').value,
                 notifEnabled: document.getElementById('notifToggle').checked,
-                isDark: document.documentElement.classList.contains('dark')
+                isDark: document.documentElement.classList.contains('dark'),
+                mode: currentMode,
+                volStd: document.getElementById('vol-std').value,
+                timeStd: document.getElementById('time-std').value,
+                volRes: document.getElementById('vol-res').value,
+                rateRes: document.getElementById('rate-res').value,
+                startTime: document.getElementById('startTime').value,
+                targetEndTime: targetEndTime ? targetEndTime.getTime() : null
             };
             localStorage.setItem('dripCalcSettings', JSON.stringify(settings));
         }
@@ -228,15 +360,58 @@
             const saved = localStorage.getItem('dripCalcSettings');
             if (saved) {
                 const settings = JSON.parse(saved);
+                
+                // Basic settings
                 document.getElementById('dripSet').value = settings.dripSet || "20";
                 document.getElementById('notifToggle').checked = settings.notifEnabled || false;
+                notificationsEnabled = settings.notifEnabled || false;
+                
                 if (settings.isDark) {
                     document.documentElement.classList.add('dark');
                     document.getElementById('sunIcon').classList.add('hidden');
                     document.getElementById('moonIcon').classList.remove('hidden');
                 }
-                notificationsEnabled = settings.notifEnabled || false;
+
+                // Restore inputs
+                if (settings.volStd) document.getElementById('vol-std').value = settings.volStd;
+                if (settings.timeStd) document.getElementById('time-std').value = settings.timeStd;
+                if (settings.volRes) document.getElementById('vol-res').value = settings.volRes;
+                if (settings.rateRes) document.getElementById('rate-res').value = settings.rateRes;
+                if (settings.startTime) document.getElementById('startTime').value = settings.startTime;
+
+                // Restore mode
+                if (settings.mode) {
+                    currentMode = settings.mode;
+                    document.getElementById('inputs-standard').classList.toggle('hidden', currentMode !== 'standard');
+                    document.getElementById('inputs-residual').classList.toggle('hidden', currentMode !== 'residual');
+                    updateTabUI();
+                }
+
+                // Restore endTime if valid
+                if (settings.targetEndTime) {
+                    const savedEnd = new Date(settings.targetEndTime);
+                    if (savedEnd > new Date()) {
+                        targetEndTime = savedEnd;
+                    }
+                }
+                
                 updateNotifStatusUI(notificationsEnabled ? "オン" : "オフ");
+            }
+        }
+
+        function updateTabUI() {
+            const btnStd = document.getElementById('tab-standard');
+            const btnRes = document.getElementById('tab-residual');
+            if (currentMode === 'standard') {
+                btnStd.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white dark:bg-sky-600 shadow-sm text-sky-600 dark:text-white";
+                btnRes.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 dark:text-slate-400";
+                document.getElementById('result-label').innerText = "1分間の滴下数";
+                document.getElementById('main-unit').innerText = "滴";
+            } else {
+                btnRes.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white dark:bg-sky-600 shadow-sm text-sky-600 dark:text-white";
+                btnStd.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 dark:text-slate-400";
+                document.getElementById('result-label').innerText = "完了までの時間";
+                document.getElementById('main-unit').innerText = "";
             }
         }
 
@@ -254,38 +429,35 @@
             currentMode = mode;
             document.getElementById('inputs-standard').classList.toggle('hidden', mode !== 'standard');
             document.getElementById('inputs-residual').classList.toggle('hidden', mode !== 'residual');
-            const btnStd = document.getElementById('tab-standard');
-            const btnRes = document.getElementById('tab-residual');
-            if (mode === 'standard') {
-                btnStd.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white dark:bg-sky-600 shadow-sm text-sky-600 dark:text-white";
-                btnRes.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 dark:text-slate-400";
-                document.getElementById('result-label').innerText = "1分間の滴下数";
-                document.getElementById('main-unit').innerText = "滴";
-            } else {
-                btnRes.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white dark:bg-sky-600 shadow-sm text-sky-600 dark:text-white";
-                btnStd.className = "flex-1 py-2.5 text-xs font-black rounded-xl transition-all text-slate-500 dark:text-slate-400";
-                document.getElementById('result-label').innerText = "完了までの時間";
-                document.getElementById('main-unit').innerText = "";
-            }
+            updateTabUI();
             calculate();
         }
 
         function calculate() {
             const dripSet = parseInt(document.getElementById('dripSet').value);
             const startTimeStr = document.getElementById('startTime').value;
-            let dropsPerMin = 0; let durationHours = 0;
+            let dropsPerMin = 0; 
+            let durationHours = 0;
 
             if (currentMode === 'standard') {
                 const vol = parseFloat(document.getElementById('vol-std').value);
                 const hours = parseFloat(document.getElementById('time-std').value);
-                if (vol > 0 && hours > 0) { dropsPerMin = (vol * dripSet) / (hours * 60); durationHours = hours; } else { resetDisplay(); return; }
+                if (vol > 0 && hours > 0) { 
+                    dropsPerMin = (vol * dripSet) / (hours * 60); 
+                    durationHours = hours; 
+                } else { resetDisplay(); return; }
             } else {
                 const vol = parseFloat(document.getElementById('vol-res').value);
                 const rate = parseFloat(document.getElementById('rate-res').value);
-                if (vol > 0 && rate > 0) { durationHours = (vol * dripSet) / rate / 60; dropsPerMin = rate; } else { resetDisplay(); return; }
+                if (vol > 0 && rate > 0) { 
+                    durationHours = (vol * dripSet) / rate / 60; 
+                    dropsPerMin = rate; 
+                } else { resetDisplay(); return; }
             }
 
-            const h = Math.floor(durationHours); const m = Math.round((durationHours % 1) * 60);
+            // Results Display
+            const h = Math.floor(durationHours); 
+            const m = Math.round((durationHours % 1) * 60);
             if (currentMode === 'standard') document.getElementById('main-result').innerText = Math.round(dropsPerMin);
             else document.getElementById('main-result').innerText = `${h}h${m}m`;
 
@@ -294,21 +466,55 @@
 
             if (startTimeStr) {
                 const [sH, sM] = startTimeStr.split(':').map(Number);
-                const date = new Date(); date.setHours(sH, sM, 0);
-                const endTime = new Date(date.getTime() + durationHours * 60 * 60 * 1000);
-                document.getElementById('time-res').innerText = endTime.getHours().toString().padStart(2, '0') + ':' + endTime.getMinutes().toString().padStart(2, '0');
-                document.getElementById('remain-txt').innerText = `${h}時間${m}分`;
-                updateProgress(date, endTime);
-                if (notificationsEnabled) setAlarm(endTime);
+                const startDate = new Date(); 
+                startDate.setHours(sH, sM, 0);
+                
+                targetEndTime = new Date(startDate.getTime() + durationHours * 60 * 60 * 1000);
+                document.getElementById('time-res').innerText = targetEndTime.getHours().toString().padStart(2, '0') + ':' + targetEndTime.getMinutes().toString().padStart(2, '0');
+                
+                updateDynamicDisplays(startDate, targetEndTime);
+                startTimer(startDate, targetEndTime);
+                
+                if (notificationsEnabled) setAlarm(targetEndTime);
             }
+            
             startRhythm(secondsPerDrop);
+            saveSettings();
         }
 
-        function updateProgress(start, end) {
-            const now = new Date(); const total = end - start; const elapsed = now - start;
-            let percent = (elapsed / total) * 100; percent = Math.max(0, Math.min(100, percent));
-            const bar = document.getElementById('progressBar'); const txt = document.getElementById('progressPercent');
-            bar.style.width = percent + '%'; txt.innerText = Math.round(percent) + '%';
+        function startTimer(start, end) {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                updateDynamicDisplays(start, end);
+            }, 10000); // Update every 10 seconds
+        }
+
+        function updateDynamicDisplays(start, end) {
+            const now = new Date();
+            
+            // Update Remaining Text
+            const diffMs = end - now;
+            if (diffMs > 0) {
+                const totalMinutes = Math.floor(diffMs / 60000);
+                const h = Math.floor(totalMinutes / 60);
+                const m = totalMinutes % 60;
+                document.getElementById('remain-txt').innerText = `${h}時間${m}分`;
+            } else {
+                document.getElementById('remain-txt').innerText = '0時間0分';
+            }
+
+            // Update Progress Bar
+            const total = end - start; 
+            const elapsed = now - start;
+            let percent = (elapsed / total) * 100; 
+            percent = Math.max(0, Math.min(100, percent));
+            
+            const bar = document.getElementById('progressBar'); 
+            const txt = document.getElementById('progressPercent');
+            
+            bar.style.width = percent + '%'; 
+            txt.innerText = Math.round(percent) + '%';
+            
             if (percent < 50) { bar.style.backgroundColor = '#0ea5e9'; txt.style.color = '#0ea5e9'; }
             else if (percent < 90) { bar.style.backgroundColor = '#10b981'; txt.style.color = '#10b981'; }
             else if (percent < 100) { bar.style.backgroundColor = '#f59e0b'; txt.style.color = '#f59e0b'; }
@@ -319,8 +525,11 @@
             if (checkbox.checked) {
                 if (!("Notification" in window)) { alert("非対応ブラウザです"); checkbox.checked = false; return; }
                 Notification.requestPermission().then(p => {
-                    if (p === "granted") { notificationsEnabled = true; updateNotifStatusUI("オン"); calculate(); saveSettings(); }
-                    else { checkbox.checked = false; }
+                    if (p === "granted") { 
+                        notificationsEnabled = true; 
+                        updateNotifStatusUI("オン"); 
+                        calculate(); 
+                    } else { checkbox.checked = false; }
                 });
             } else {
                 notificationsEnabled = false;
@@ -353,7 +562,10 @@
             const tick = () => {
                 dot.classList.add('rhythm-active');
                 if (isFlashing) overlay.classList.add('flash-active');
-                setTimeout(() => { dot.classList.remove('rhythm-active'); overlay.classList.remove('flash-active'); }, 150);
+                setTimeout(() => { 
+                    dot.classList.remove('rhythm-active'); 
+                    overlay.classList.remove('flash-active'); 
+                }, 150);
             };
             tick();
             rhythmInterval = setInterval(tick, seconds * 1000);
@@ -370,6 +582,7 @@
             document.getElementById('progressBar').style.width = '0%';
             if (rhythmInterval) clearInterval(rhythmInterval);
             if (alarmTimeout) clearTimeout(alarmTimeout);
+            if (timerInterval) clearInterval(timerInterval);
         }
 
         document.querySelectorAll('input[type="number"]').forEach(el => {
@@ -377,4 +590,5 @@
         });
     </script>
 </body>
+
 </html>
