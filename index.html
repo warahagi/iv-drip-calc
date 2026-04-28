@@ -128,19 +128,27 @@
             class="text-[10px] font-black px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-400 uppercase tracking-tighter">
             通知: オフ
         </div>
-        <button onclick="toggleDarkMode()"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
-            <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-        </button>
+        <div class="flex gap-2">
+            <button onclick="resetAll()" title="リセット"
+                class="p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-red-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+            <button onclick="toggleDarkMode()"
+                class="p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div class="w-full max-w-md space-y-4">
@@ -580,9 +588,38 @@
             document.getElementById('remain-txt').innerText = '0時間0分';
             document.getElementById('sec-res').innerText = '0';
             document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressPercent').innerText = '0%';
             if (rhythmInterval) clearInterval(rhythmInterval);
             if (alarmTimeout) clearTimeout(alarmTimeout);
             if (timerInterval) clearInterval(timerInterval);
+        }
+
+        function resetAll() {
+            if (confirm('すべての入力をリセットして初期状態に戻しますか？')) {
+                localStorage.removeItem('dripCalcSettings');
+                
+                // 変数のリセット
+                targetEndTime = null;
+                
+                // 入力フィールドのクリア
+                document.getElementById('vol-std').value = '';
+                document.getElementById('time-std').value = '';
+                document.getElementById('vol-res').value = '';
+                document.getElementById('rate-res').value = '';
+                
+                const now = new Date();
+                document.getElementById('startTime').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                document.getElementById('dripSet').value = '20';
+                document.getElementById('notifToggle').checked = false;
+                notificationsEnabled = false;
+                updateNotifStatusUI("オフ");
+                
+                // モードを標準に戻す
+                setMode('standard');
+                
+                // 表示のリセット
+                resetDisplay();
+            }
         }
 
         document.querySelectorAll('input[type="number"]').forEach(el => {
