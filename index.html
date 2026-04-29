@@ -192,6 +192,11 @@
             </p>
         </header>
 
+        <!-- Status Guidance Area -->
+        <div id="statusGuidance" class="bg-sky-500 text-white p-3 rounded-2xl shadow-lg shadow-sky-500/20 text-center animate-pulse">
+            <span class="text-xs font-black uppercase tracking-widest">数値を入力してください</span>
+        </div>
+
         <div class="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl">
             <button onclick="setMode('standard')" id="tab-standard"
                 class="flex-1 py-2.5 text-xs font-black rounded-xl transition-all bg-white dark:bg-sky-600 shadow-sm text-sky-600 dark:text-white">予定時間から</button>
@@ -272,7 +277,7 @@
                 </div>
             </div>
 
-            <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl flex items-center justify-between">
+            <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl flex items-center justify-between border border-amber-100 dark:border-amber-900/50">
                 <div class="flex items-center gap-3">
                     <div
                         class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
@@ -284,14 +289,10 @@
                     </div>
                     <div>
                         <p class="text-xs font-black text-amber-900 dark:text-amber-200">終了10分前アラート</p>
-                        <p class="text-[9px] font-bold text-amber-700/60 dark:text-amber-400/60 uppercase">終了10分前にお知らせ
-                        </p>
+                        <p class="text-[9px] font-bold text-amber-700/60 dark:text-amber-400/60 uppercase">下のボタンで開始</p>
                     </div>
                 </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="notifToggle" onchange="toggleAlarm(this); saveSettings();">
-                    <span class="slider"></span>
-                </label>
+                <div id="notifBadge" class="px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-800 text-[8px] font-black text-slate-500 uppercase">待機中</div>
             </div>
         </div>
 
@@ -345,6 +346,14 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Main Action Button -->
+        <div class="w-full pt-2">
+            <button id="mainActionButton" onclick="handleMainAction()"
+                class="w-full py-6 rounded-[2rem] bg-slate-200 dark:bg-slate-800 text-slate-400 font-black text-xl shadow-xl transition-all active:scale-95 disabled:opacity-50">
+                数値を入力してください
+            </button>
         </div>
 
         <footer class="text-center px-10">
@@ -520,6 +529,7 @@
                 document.getElementById('result-label').innerText = "完了までの時間";
                 document.getElementById('main-unit').innerText = "";
             }
+            if (notificationsEnabled) handleMainAction(); // 再計算時に状態リセットが必要な場合
         }
 
         function toggleDarkMode() {
@@ -545,6 +555,7 @@
             const startTimeStr = document.getElementById('startTime').value;
             let dropsPerMin = 0; 
             let durationHours = 0;
+            let isValid = false;
 
             if (currentMode === 'standard') {
                 const vol = parseFloat(document.getElementById('vol-std').value);
@@ -552,14 +563,16 @@
                 if (vol > 0 && hours > 0) { 
                     dropsPerMin = (vol * dripSet) / (hours * 60); 
                     durationHours = hours; 
-                } else { resetDisplay(); return; }
+                    isValid = true;
+                } else { resetDisplay(); updateUIState('input'); return; }
             } else {
                 const vol = parseFloat(document.getElementById('vol-res').value);
                 const rate = parseFloat(document.getElementById('rate-res').value);
                 if (vol > 0 && rate > 0) { 
                     durationHours = (vol * dripSet) / rate / 60; 
                     dropsPerMin = rate; 
-                } else { resetDisplay(); return; }
+                    isValid = true;
+                } else { resetDisplay(); updateUIState('input'); return; }
             }
 
             // Results Display
@@ -582,10 +595,80 @@
                 updateDynamicDisplays(startDate, targetEndTime);
                 startTimer(startDate, targetEndTime);
                 
-                if (notificationsEnabled) setAlarm(targetEndTime);
+                if (isValid && !notificationsEnabled) {
+                    updateUIState('ready');
+                } else if (notificationsEnabled) {
+                    updateUIState('active');
+                }
             }
             
             startRhythm(secondsPerDrop);
+            saveSettings();
+        }
+
+        function updateUIState(state) {
+            const guidance = document.getElementById('statusGuidance');
+            const btn = document.getElementById('mainActionButton');
+            const badge = document.getElementById('notifBadge');
+            
+            if (state === 'input') {
+                guidance.className = "bg-slate-200 text-slate-500 p-3 rounded-2xl text-center";
+                guidance.innerHTML = '<span class="text-xs font-black uppercase tracking-widest">数値を入力してください</span>';
+                btn.innerText = "数値を入力してください";
+                btn.className = "w-full py-6 rounded-[2rem] bg-slate-200 dark:bg-slate-800 text-slate-400 font-black text-xl shadow-xl transition-all cursor-not-allowed";
+                badge.innerText = "待機中";
+                badge.className = "px-2 py-1 rounded-md bg-slate-200 dark:bg-slate-800 text-[8px] font-black text-slate-500 uppercase";
+            } else if (state === 'ready') {
+                guidance.className = "bg-emerald-500 text-white p-3 rounded-2xl shadow-lg shadow-emerald-500/20 text-center animate-bounce";
+                guidance.innerHTML = '<span class="text-xs font-black uppercase tracking-widest">計算完了！開始してください</span>';
+                btn.innerText = "アラームを開始する";
+                btn.className = "w-full py-6 rounded-[2rem] bg-sky-500 text-white font-black text-xl shadow-xl shadow-sky-500/30 transition-all active:scale-95";
+                badge.innerText = "準備完了";
+                badge.className = "px-2 py-1 rounded-md bg-emerald-100 text-emerald-600 text-[8px] font-black uppercase";
+            } else if (state === 'active') {
+                const timeStr = targetEndTime.getHours().toString().padStart(2, '0') + ':' + targetEndTime.getMinutes().toString().padStart(2, '0');
+                guidance.className = "bg-amber-500 text-white p-3 rounded-2xl shadow-lg shadow-amber-500/20 text-center";
+                guidance.innerHTML = `<span class="text-xs font-black uppercase tracking-widest">${timeStr}にアラームが鳴ります</span>`;
+                btn.innerText = "アラームを停止する";
+                btn.className = "w-full py-6 rounded-[2rem] bg-slate-800 text-white font-black text-xl shadow-xl transition-all active:scale-95";
+                badge.innerText = "監視中";
+                badge.className = "px-2 py-1 rounded-md bg-amber-500 text-white text-[8px] font-black uppercase shadow-sm";
+            }
+        }
+
+        function handleMainAction() {
+            if (notificationsEnabled) {
+                // Stop Alarm
+                notificationsEnabled = false;
+                if (alarmTimeout) clearTimeout(alarmTimeout);
+                releaseWakeLock();
+                SoundManager.stopSilentLoop();
+                SoundManager.stopAlarm();
+                updateUIState('ready');
+                updateNotifStatusUI("オフ");
+            } else {
+                // Start Alarm
+                SoundManager.unlock();
+                
+                if (isIOS && !window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
+                    document.getElementById('iosGuide').style.display = 'flex';
+                }
+
+                if (!("Notification" in window)) {
+                    alert("このブラウザは通知に対応していません");
+                    return;
+                }
+
+                Notification.requestPermission().then(p => {
+                    if (p === "granted") {
+                        notificationsEnabled = true;
+                        calculate(); // これによりステータスが active になる
+                        updateNotifStatusUI("オン");
+                    } else {
+                        if (p === "denied") alert("通知が拒否されています。ブラウザの設定から許可してください。");
+                    }
+                });
+            }
             saveSettings();
         }
 
@@ -696,6 +779,13 @@
             const el = document.getElementById('notifStatus');
             el.innerText = `通知: ${status}`;
             el.className = status === "オン" ? "text-[10px] font-black px-3 py-1.5 rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 uppercase tracking-tighter" : "text-[10px] font-black px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-400 uppercase tracking-tighter";
+            
+            // 設定反映
+            if (status === "オン" && targetEndTime) {
+                setAlarm(targetEndTime);
+                requestWakeLock();
+                SoundManager.startSilentLoop();
+            }
         }
 
         async function setAlarm(endTime) {
