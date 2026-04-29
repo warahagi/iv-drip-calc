@@ -413,10 +413,18 @@
                 osc.stop(this.audioCtx.currentTime + 0.5);
             },
 
-            playAlarm() {
+            playAlarm(durationSeconds = 0) {
                 this.stopAlarm();
                 this.playBeep();
                 this.alarmInterval = setInterval(() => this.playBeep(), 1000);
+                
+                // 秒数が指定されている場合は自動停止タイマーをセット
+                if (durationSeconds > 0) {
+                    setTimeout(() => {
+                        this.stopAlarm();
+                        console.log(`Alarm auto-stopped after ${durationSeconds}s`);
+                    }, durationSeconds * 1000);
+                }
             },
 
             stopAlarm() {
@@ -791,17 +799,10 @@
 
         function triggerAlert(title, body) {
             console.log(`ALERT TRIGGERED: ${title}`);
-            SoundManager.playAlarm();
             
-            // 10分前アラートの場合は30秒で自動停止
-            if (title.includes("10分前")) {
-                setTimeout(() => {
-                    if (notificationsEnabled) { // まだアラームが有効な場合のみ
-                        SoundManager.stopAlarm();
-                        console.log("10min alert auto-stopped after 30s");
-                    }
-                }, 30000); // 30秒
-            }
+            // 10分前アラートは30秒で自動停止、終了アラームは止まるまで鳴らす
+            const duration = title.includes("10分前") ? 30 : 0;
+            SoundManager.playAlarm(duration);
             
             if ("Notification" in window && Notification.permission === "granted") {
                 navigator.serviceWorker.ready.then(reg => {
