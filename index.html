@@ -459,7 +459,7 @@
         function saveSettings() {
             const settings = {
                 dripSet: document.getElementById('dripSet').value,
-                notifEnabled: document.getElementById('notifToggle').checked,
+                notifEnabled: notificationsEnabled,
                 isDark: document.documentElement.classList.contains('dark'),
                 mode: currentMode,
                 volStd: document.getElementById('vol-std').value,
@@ -479,7 +479,6 @@
                 
                 // Basic settings
                 document.getElementById('dripSet').value = settings.dripSet || "20";
-                document.getElementById('notifToggle').checked = settings.notifEnabled || false;
                 notificationsEnabled = settings.notifEnabled || false;
                 
                 if (settings.isDark) {
@@ -650,6 +649,11 @@
                 // Start Alarm
                 SoundManager.unlock();
                 
+                // 開始時刻を「今」にセットする
+                const now = new Date();
+                const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                document.getElementById('startTime').value = timeStr;
+                
                 if (isIOS && !window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
                     document.getElementById('iosGuide').style.display = 'flex';
                 }
@@ -711,45 +715,6 @@
             else { bar.style.backgroundColor = '#f43f5e'; txt.style.color = '#f43f5e'; }
         }
 
-        function toggleAlarm(checkbox) {
-            if (checkbox.checked) {
-                // Audio Unlock
-                SoundManager.unlock();
-                
-                // iOS Guide
-                if (isIOS && !window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
-                    document.getElementById('iosGuide').style.display = 'flex';
-                }
-
-                if (!("Notification" in window)) {
-                    alert("このブラウザは通知に対応していません");
-                    checkbox.checked = false;
-                    return;
-                }
-
-                Notification.requestPermission().then(p => {
-                    if (p === "granted") {
-                        notificationsEnabled = true;
-                        updateNotifStatusUI("オン");
-                        calculate();
-                        requestWakeLock();
-                        SoundManager.startSilentLoop(); // バックグラウンド維持開始
-                    } else {
-                        checkbox.checked = false;
-                        if (p === "denied") alert("通知が拒否されています。ブラウザの設定から許可してください。");
-                    }
-                });
-            } else {
-                notificationsEnabled = false;
-                if (alarmTimeout) clearTimeout(alarmTimeout);
-                updateNotifStatusUI("オフ");
-                releaseWakeLock();
-                SoundManager.stopSilentLoop();
-                SoundManager.stopAlarm();
-                saveSettings();
-            }
-        }
-
         function closeIosGuide() {
             document.getElementById('iosGuide').style.display = 'none';
         }
@@ -785,6 +750,11 @@
                 setAlarm(targetEndTime);
                 requestWakeLock();
                 SoundManager.startSilentLoop();
+            } else {
+                if (alarmTimeout) clearTimeout(alarmTimeout);
+                releaseWakeLock();
+                SoundManager.stopSilentLoop();
+                SoundManager.stopAlarm();
             }
         }
 
@@ -867,7 +837,6 @@
                 const now = new Date();
                 document.getElementById('startTime').value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
                 document.getElementById('dripSet').value = '20';
-                document.getElementById('notifToggle').checked = false;
                 notificationsEnabled = false;
                 updateNotifStatusUI("オフ");
                 
