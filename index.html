@@ -356,9 +356,10 @@
             </button>
         </div>
 
-        <footer class="text-center px-10">
+        <footer class="text-center px-10 pb-4">
             <p class="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">※
                 計算結果は目安です。必ず最終的な確認を行ってください。</p>
+            <p id="versionTag" class="text-[8px] font-bold text-slate-300 dark:text-slate-700 mt-2">v1.2 (Auto-Stop Fix)</p>
         </footer>
     </div>
 
@@ -414,15 +415,17 @@
             },
 
             playAlarm(durationSeconds = 0) {
-                this.stopAlarm();
-                this.playBeep();
-                this.alarmInterval = setInterval(() => this.playBeep(), 1000);
+                const manager = this;
+                manager.stopAlarm();
+                manager.playBeep();
+                manager.alarmInterval = setInterval(() => manager.playBeep(), 1000);
                 
                 // 秒数が指定されている場合は自動停止タイマーをセット
                 if (durationSeconds > 0) {
+                    console.log(`Auto-stop timer set for ${durationSeconds}s`);
                     setTimeout(() => {
-                        this.stopAlarm();
-                        console.log(`Alarm auto-stopped after ${durationSeconds}s`);
+                        console.log("Timer fired. Attempting to stop alarm...");
+                        manager.stopAlarm();
                     }, durationSeconds * 1000);
                 }
             },
@@ -431,6 +434,7 @@
                 if (this.alarmInterval) {
                     clearInterval(this.alarmInterval);
                     this.alarmInterval = null;
+                    console.log("Alarm interval cleared");
                 }
             },
 
