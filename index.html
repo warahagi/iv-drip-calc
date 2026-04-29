@@ -510,6 +510,7 @@
                     }
                 }
                 
+                // 表示の初期化
                 updateNotifStatusUI(notificationsEnabled ? "オン" : "オフ");
             }
         }
@@ -666,9 +667,11 @@
                 Notification.requestPermission().then(p => {
                     if (p === "granted") {
                         notificationsEnabled = true;
-                        calculate(); // これによりステータスが active になる
+                        calculate(); // これによりステータスが active になり targetEndTime がセットされる
                         updateNotifStatusUI("オン");
                     } else {
+                        notificationsEnabled = false;
+                        updateNotifStatusUI("オフ");
                         if (p === "denied") alert("通知が拒否されています。ブラウザの設定から許可してください。");
                     }
                 });
@@ -742,15 +745,21 @@
 
         function updateNotifStatusUI(status) {
             const el = document.getElementById('notifStatus');
-            el.innerText = `通知: ${status}`;
-            el.className = status === "オン" ? "text-[10px] font-black px-3 py-1.5 rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 uppercase tracking-tighter" : "text-[10px] font-black px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-400 uppercase tracking-tighter";
+            if (!el) return;
             
-            // 設定反映
-            if (status === "オン" && targetEndTime) {
-                setAlarm(targetEndTime);
-                requestWakeLock();
-                SoundManager.startSilentLoop();
+            el.innerText = `通知: ${status}`;
+            
+            if (status === "オン") {
+                el.className = "text-[10px] font-black px-3 py-1.5 rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 uppercase tracking-tighter";
+                // アラーム実処理
+                if (targetEndTime) {
+                    setAlarm(targetEndTime);
+                    requestWakeLock();
+                    SoundManager.startSilentLoop();
+                }
             } else {
+                el.className = "text-[10px] font-black px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-400 uppercase tracking-tighter";
+                // 停止処理
                 if (alarmTimeout) clearTimeout(alarmTimeout);
                 releaseWakeLock();
                 SoundManager.stopSilentLoop();
