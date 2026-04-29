@@ -27,6 +27,8 @@ self.addEventListener('fetch', (event) => {
 // 通知がクリックされた時の処理
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  
+  // アプリを開く、または既存のウィンドウにフォーカスする
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       if (clientList.length > 0) {

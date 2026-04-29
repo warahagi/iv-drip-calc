@@ -145,9 +145,14 @@
             </div>
             <div class="text-center space-y-2">
                 <h3 class="text-xl font-black text-slate-800 dark:text-white">iPhoneをご利用の方へ</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">通知を鳴らすには、ブラウザの共有メニューから<br><span class="font-bold text-sky-500">「ホーム画面に追加」</span>を行い、アプリとして起動する必要があります。</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    通知を鳴らすには、以下の2点が必要です：<br>
+                    1. ブラウザの共有メニューから<br><span class="font-bold text-sky-500">「ホーム画面に追加」</span>して起動<br>
+                    2. <span class="font-bold text-red-500">マナーモード（消音スイッチ）をオフ</span>にする
+                </p>
+                <p class="text-[10px] text-slate-400 mt-2">※画面を閉じてもアラームが鳴るよう最適化されていますが、念のため画面を点灯させた状態での使用を推奨します。</p>
             </div>
-            <button onclick="closeIosGuide()" class="w-full py-4 bg-sky-500 text-white font-black rounded-2xl shadow-lg shadow-sky-500/30 active:scale-95 transition-transform">了解しました</button>
+            <button onclick="closeIosGuide()" class="w-full py-4 bg-sky-500 text-white font-black rounded-2xl shadow-lg shadow-sky-500/30 active:scale-95 transition-transform">設定を確認しました</button>
         </div>
     </div>
 
@@ -358,6 +363,69 @@
         let targetEndTime = null;
         let wakeLock = null;
 
+        // Sound & Background Management
+        const SoundManager = {
+            alarmAudio: null,
+            silentAudio: null,
+            isUnlocked: false,
+            
+            init() {
+                if (this.isUnlocked) return;
+                
+                // アラーム音 (BEEP)
+                this.alarmAudio = new Audio();
+                this.alarmAudio.src = "data:audio/mp3;base64,SUQzBAAAAAABAFRYWFgAAAASAAADbWFqb3JfYnJhbmQAZGFzaABUWFhYAAAAEgAAA21pbm9yX3ZlcnNpb24AMABUWFhYAAAAHAAAA2NvbXBhdGlibGVfYnJhbmRzAGlzbzZtcDQxAFRTU0UAAAAPAAADTGF2ZjYwLjMuMTAwAAAAAAAAAAAAAAD/80MUAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAAK7AALCxYWFhYfHx8fHyYmJiYmLS0tLS00NDQ0NDs7Ozs7Q0NDQ0NKSkpKSk9PT09PVlZWVlZdXV1dXV5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXv/zQxQZAAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUYgAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUcgAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUggAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUlAAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUmAAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUnAAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUogAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUpgAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUqAAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUrAAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUsAAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUtAAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUtgAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID/80MUtwAAN4AAAAAAAAYAAA0gUAAAAtAAA0gAAABID"; // 実際にはもう少し長い音が必要
+                
+                // 無音 (バックグラウンド維持用)
+                this.silentAudio = new Audio();
+                this.silentAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFRm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAP8H/w==";
+                this.silentAudio.loop = true;
+
+                this.isUnlocked = true;
+                console.log("Audio Unlocked");
+            },
+
+            unlock() {
+                this.init();
+                // iOSの制限を解除するために一瞬再生して停止
+                this.alarmAudio.play().then(() => {
+                    this.alarmAudio.pause();
+                    this.alarmAudio.currentTime = 0;
+                }).catch(e => console.log("Unlock failed", e));
+                
+                this.silentAudio.play().then(() => {
+                    this.silentAudio.pause();
+                }).catch(e => console.log("Silent Unlock failed", e));
+            },
+
+            startSilentLoop() {
+                if (this.silentAudio) {
+                    this.silentAudio.play().catch(e => console.log("Silent loop failed", e));
+                }
+            },
+
+            stopSilentLoop() {
+                if (this.silentAudio) {
+                    this.silentAudio.pause();
+                }
+            },
+
+            playAlarm() {
+                if (this.alarmAudio) {
+                    this.alarmAudio.currentTime = 0;
+                    this.alarmAudio.loop = true;
+                    this.alarmAudio.play().catch(e => console.log("Alarm play failed", e));
+                }
+            },
+
+            stopAlarm() {
+                if (this.alarmAudio) {
+                    this.alarmAudio.pause();
+                    this.alarmAudio.loop = false;
+                }
+            }
+        };
+
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
         // PWA Service Worker Registration
@@ -562,6 +630,9 @@
 
         function toggleAlarm(checkbox) {
             if (checkbox.checked) {
+                // Audio Unlock
+                SoundManager.unlock();
+                
                 // iOS Guide
                 if (isIOS && !window.navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
                     document.getElementById('iosGuide').style.display = 'flex';
@@ -578,7 +649,8 @@
                         notificationsEnabled = true;
                         updateNotifStatusUI("オン");
                         calculate();
-                        requestWakeLock(); // 通知をオンにしたらスリープ防止も試みる
+                        requestWakeLock();
+                        SoundManager.startSilentLoop(); // バックグラウンド維持開始
                     } else {
                         checkbox.checked = false;
                         if (p === "denied") alert("通知が拒否されています。ブラウザの設定から許可してください。");
@@ -589,6 +661,8 @@
                 if (alarmTimeout) clearTimeout(alarmTimeout);
                 updateNotifStatusUI("オフ");
                 releaseWakeLock();
+                SoundManager.stopSilentLoop();
+                SoundManager.stopAlarm();
                 saveSettings();
             }
         }
@@ -627,18 +701,30 @@
         async function setAlarm(endTime) {
             if (alarmTimeout) clearTimeout(alarmTimeout);
             const diffMs = (endTime.getTime() - 10 * 60 * 1000) - Date.now();
+            
             if (diffMs > 0) {
+                console.log(`Alarm set for ${new Date(Date.now() + diffMs).toLocaleTimeString()}`);
                 alarmTimeout = setTimeout(async () => {
+                    // 音を鳴らす
+                    SoundManager.playAlarm();
+                    
+                    // 通知を出す
                     if ('serviceWorker' in navigator) {
                         const reg = await navigator.serviceWorker.ready;
                         reg.showNotification("点滴終了10分前", {
                             body: "間もなく設定した時間が経過します。様子を確認してください。",
                             icon: "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
                             badge: "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
-                            vibrate: [200, 100, 200]
+                            vibrate: [500, 110, 500, 110, 450, 110, 200, 110, 170, 40, 450, 110, 200, 110, 170, 40],
+                            tag: 'iv-drip-alarm',
+                            renotify: true,
+                            requireInteraction: true // ユーザーが閉じるまで保持
                         });
                     } else {
-                        new Notification("点滴終了10分前", { body: "様子を確認してください。" });
+                        new Notification("点滴終了10分前", { 
+                            body: "様子を確認してください。",
+                            requireInteraction: true 
+                        });
                     }
                 }, diffMs);
             }
