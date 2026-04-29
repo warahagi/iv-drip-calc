@@ -365,8 +365,9 @@
     <script>
         let currentMode = 'standard';
         let rhythmInterval = null;
-        let alarmTimeout = null;
         let timerInterval = null;
+        let alarm10MinTimeout = null;
+        let alarmEndTimeout = null;
         let notificationsEnabled = false;
         let isFlashing = false;
         let targetEndTime = null;
@@ -640,10 +641,7 @@
             if (notificationsEnabled) {
                 // Stop Alarm
                 notificationsEnabled = false;
-                if (alarmTimeout) clearTimeout(alarmTimeout);
-                releaseWakeLock();
-                SoundManager.stopSilentLoop();
-                SoundManager.stopAlarm();
+                clearAllAlarms();
                 updateUIState('ready');
                 updateNotifStatusUI("オフ");
             } else {
@@ -677,6 +675,16 @@
                 });
             }
             saveSettings();
+        }
+
+        function clearAllAlarms() {
+            if (alarm10MinTimeout) clearTimeout(alarm10MinTimeout);
+            if (alarmEndTimeout) clearTimeout(alarmEndTimeout);
+            alarm10MinTimeout = null;
+            alarmEndTimeout = null;
+            releaseWakeLock();
+            SoundManager.stopSilentLoop();
+            SoundManager.stopAlarm();
         }
 
         function startTimer(start, end) {
@@ -759,43 +767,52 @@
                 }
             } else {
                 el.className = "text-[10px] font-black px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-400 uppercase tracking-tighter";
-                // 停止処理
-                if (alarmTimeout) clearTimeout(alarmTimeout);
-                releaseWakeLock();
-                SoundManager.stopSilentLoop();
-                SoundManager.stopAlarm();
+                clearAllAlarms();
             }
         }
 
         async function setAlarm(endTime) {
-            if (alarmTimeout) clearTimeout(alarmTimeout);
-            const diffMs = (endTime.getTime() - 10 * 60 * 1000) - Date.now();
+            clearAllAlarms();
+            const now = Date.now();
             
-            if (diffMs > 0) {
-                console.log(`Alarm set for ${new Date(Date.now() + diffMs).toLocaleTimeString()}`);
-                alarmTimeout = setTimeout(async () => {
-                    // 音を鳴らす
-                    SoundManager.playAlarm();
-                    
-                    // 通知を出す
-                    if ('serviceWorker' in navigator) {
-                        const reg = await navigator.serviceWorker.ready;
-                        reg.showNotification("点滴終了10分前", {
-                            body: "間もなく設定した時間が経過します。様子を確認してください。",
-                            icon: "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
-                            badge: "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
-                            vibrate: [500, 110, 500, 110, 450, 110, 200, 110, 170, 40, 450, 110, 200, 110, 170, 40],
-                            tag: 'iv-drip-alarm',
-                            renotify: true,
-                            requireInteraction: true // ユーザーが閉じるまで保持
-                        });
-                    } else {
-                        new Notification("点滴終了10分前", { 
-                            body: "様子を確認してください。",
-                            requireInteraction: true 
-                        });
-                    }
-                }, diffMs);
+            // 1. 10分前アラーム
+            const time10Min = endTime.getTime() - 10 * 60 * 1000;
+            const diff10Min = time10Min - now;
+            if (diff10Min > 0) {
+                console.log(`10min alarm set for: ${new Date(time10Min).toLocaleTimeString()}`);
+                alarm10MinTimeout = setTimeout(() => {
+                    triggerAlert("点滴終了10分前", "間もなく設定した時間が経過します。様子を確認してください。");
+                }, diff10Min);
+            }
+
+            // 2. 終了アラーム
+            const diffEnd = endTime.getTime() - now;
+            if (diffEnd > 0) {
+                console.log(`End alarm set for: ${endTime.toLocaleTimeString()}`);
+                alarmEndTimeout = setTimeout(() => {
+                    triggerAlert("点滴終了時間", "設定した時間が経過しました。点滴を確認してください。");
+                }, diffEnd);
+            }
+        }
+
+        async function triggerAlert(title, body) {
+            // 音を鳴らす
+            SoundManager.playAlarm();
+            
+            // 通知を出す
+            if ('serviceWorker' in navigator && Notification.permission === "granted") {
+                const reg = await navigator.serviceWorker.ready;
+                reg.showNotification(title, {
+                    body: body,
+                    icon: "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
+                    badge: "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
+                    vibrate: [500, 110, 500, 110, 450, 110, 200, 110, 170, 40],
+                    tag: 'iv-drip-alarm',
+                    renotify: true,
+                    requireInteraction: true
+                });
+            } else {
+                alert(`${title}\n${body}`);
             }
         }
 
@@ -825,9 +842,8 @@
             document.getElementById('sec-res').innerText = '0';
             document.getElementById('progressBar').style.width = '0%';
             document.getElementById('progressPercent').innerText = '0%';
-            if (rhythmInterval) clearInterval(rhythmInterval);
-            if (alarmTimeout) clearTimeout(alarmTimeout);
             if (timerInterval) clearInterval(timerInterval);
+            clearAllAlarms();
         }
 
         function resetAll() {
