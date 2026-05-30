@@ -261,6 +261,15 @@
             <div class="flex gap-2">
                 <div class="space-y-2 flex-1">
                     <label
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">開始/現在時刻</label>
+                    <input type="time" id="startTime"
+                        class="text-[11px] font-bold p-2 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all"
+                        style="width: 100%; min-width: 0;"
+                        oninput="calculate()">
+                </div>
+                
+                <div class="space-y-2 flex-1">
+                    <label
                         class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">セット</label>
                     <select id="dripSet" onchange="calculate(); saveSettings();"
                         class="text-[11px] font-bold p-2 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all appearance-none"
@@ -269,14 +278,7 @@
                         <option value="60">小児 (60滴)</option>
                     </select>
                 </div>
-                <div class="space-y-2 flex-1">
-                    <label
-                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">開始/現在時刻</label>
-                    <input type="time" id="startTime"
-                        class="text-[11px] font-bold p-2 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all"
-                        style="width: 100%; min-width: 0;"
-                        oninput="calculate()">
-                </div>
+                
             </div>
 
             <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl flex items-center justify-between border border-amber-100 dark:border-amber-900/50">
