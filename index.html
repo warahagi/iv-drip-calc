@@ -258,8 +258,8 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="space-y-2">
+            <div class="flex gap-2">
+                <div class="space-y-2 flex-1">
                     <label
                         class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">セット</label>
                     <select id="dripSet" onchange="calculate(); saveSettings();"
@@ -269,7 +269,7 @@
                         <option value="60">小児 (60滴)</option>
                     </select>
                 </div>
-                <div class="space-y-2">
+                <div class="space-y-2 flex-1">
                     <label
                         class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">開始/現在時刻</label>
                     <input type="time" id="startTime"
