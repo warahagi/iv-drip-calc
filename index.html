@@ -40,6 +40,12 @@
             margin: 0;
         }
 
+        /* Hide native time picker clock icon in Webkit browsers (Chrome/Safari/Edge) */
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            display: none;
+            -webkit-appearance: none;
+        }
+
         .rhythm-active {
             box-shadow: 0 0 30px 6px rgba(14, 165, 233, 0.7);
             background-color: #0ea5e9 !important;
@@ -259,22 +265,24 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4 w-full">
-                <div class="space-y-1 w-full">
+                <div class="space-y-1 w-full relative">
                     <label
                         class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">開始/現在時刻</label>
-                
                     <input type="time" id="startTime"
-                        class="w-full text-sm font-bold p-3 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all text-center"
-                        
+                        class="w-full text-sm font-bold p-3 pr-8 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all text-center appearance-none cursor-pointer"
                         oninput="calculate()">
-                    
+                    <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400 dark:text-slate-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
                 </div>
                 
                 <div class="space-y-1 w-full relative">
                     <label
                         class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider ml-1">セット</label>
                     <select id="dripSet" onchange="calculate(); saveSettings();"
-                        class="w-full text-sm font-bold p-3 pr-8 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all text-center ppearance-none cursor-pointer">
+                        class="w-full text-sm font-bold p-3 pr-8 bg-slate-50 dark:bg-slate-800 dark:text-white border-2 border-transparent rounded-2xl focus:border-sky-400 outline-none transition-all text-center appearance-none cursor-pointer">
                         <option value="20">成人 (20滴)</option>
                         <option value="60">小児 (60滴)</option>
                     </select>
